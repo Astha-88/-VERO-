@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: vero-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vero
+      POSTGRES_USER: vero
+      POSTGRES_PASSWORD: vero_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vero -d vero"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

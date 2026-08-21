@@ -216,3 +216,27 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Environment / secrets
+.env
+backend/.env
+# VERŌ local development
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+
+# Python environments
+.venv/
+venv/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+
+# macOS
+.DS_Store
