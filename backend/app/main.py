@@ -1,13 +1,14 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from app.api.vehicles import router as vehicle_router
 from app.core import database
 
 app = FastAPI(
     title="VERŌ API",
     version="0.1.0",
 )
-
+app.include_router(vehicle_router)
 
 @app.get("/health/live")
 def health_live() -> dict[str, str]:

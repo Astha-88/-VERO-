@@ -1,6 +1,8 @@
+from collections.abc import Generator
+
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import settings
 
@@ -27,3 +29,11 @@ def check_database_connection() -> bool:
         return True
     except SQLAlchemyError:
         return False
+
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
