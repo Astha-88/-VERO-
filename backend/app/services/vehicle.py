@@ -9,7 +9,6 @@ def create_vehicle(db: Session, vehicle_data: VehicleCreate) -> Vehicle:
     vehicle = Vehicle(
         registration_number=vehicle_data.registration_number,
     )
-
     db.add(vehicle)
 
     try:
@@ -22,4 +21,13 @@ def create_vehicle(db: Session, vehicle_data: VehicleCreate) -> Vehicle:
         )
 
     db.refresh(vehicle)
+    return vehicle
+
+
+def get_vehicle(db: Session, vehicle_id: int) -> Vehicle:
+    vehicle = db.get(Vehicle, vehicle_id)
+
+    if vehicle is None:
+        raise ValueError(f"Vehicle with id {vehicle_id} not found")
+
     return vehicle
