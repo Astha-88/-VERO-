@@ -1,3 +1,4 @@
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -22,8 +23,6 @@ def create_vehicle(db: Session, vehicle_data: VehicleCreate) -> Vehicle:
 
     db.refresh(vehicle)
     return vehicle
-
-
 def get_vehicle(db: Session, vehicle_id: int) -> Vehicle:
     vehicle = db.get(Vehicle, vehicle_id)
 
@@ -31,3 +30,23 @@ def get_vehicle(db: Session, vehicle_id: int) -> Vehicle:
         raise ValueError(f"Vehicle with id {vehicle_id} not found")
 
     return vehicle
+
+def get_vehicles(
+    db: Session,
+    limit: int,
+    offset: int,
+) -> tuple[list[Vehicle], int]:
+    total = db.scalar(select(func.count()).select_from(Vehicle)) or 0
+
+    vehicles = list(
+        db.scalars(
+            select(Vehicle)
+            .order_by(Vehicle.id)
+            .offset(offset)
+            .limit(limit)
+        ).all()
+    )
+
+    return vehicles, total
+
+

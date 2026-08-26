@@ -2,8 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.vehicle import VehicleCreate, VehicleResponse
-from app.services.vehicle import create_vehicle, get_vehicle
+from app.schemas.vehicle import (
+    VehicleCreate,
+    VehicleListResponse,
+    VehicleResponse,
+)
+from app.services.vehicle import create_vehicle, get_vehicle, get_vehicles
 
 router = APIRouter(prefix="/vehicles", tags=["vehicles"])
 
@@ -20,7 +24,24 @@ def create_vehicle_endpoint(
             status_code=409,
             detail=str(exc),
         ) from exc
+@router.get("", response_model=VehicleListResponse)
+def list_vehicles_endpoint(
+    limit: int = 20,
+    offset: int = 0,
+    db: Session = Depends(get_db),  # noqa: B008
+) -> VehicleListResponse:
+    vehicles, total = get_vehicles(
+        db,
+        limit=limit,
+        offset=offset,
+    )
 
+    return VehicleListResponse(
+        items=vehicles,
+        limit=limit,
+        offset=offset,
+        total=total,
+    )
 
 @router.get("/{vehicle_id}", response_model=VehicleResponse)
 def get_vehicle_endpoint(

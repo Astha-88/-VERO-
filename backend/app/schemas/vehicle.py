@@ -13,3 +13,9 @@ class VehicleResponse(BaseModel):
     id: int
     registration_number: str
     created_at: datetime
+
+class VehicleListResponse(BaseModel):
+    items: list[VehicleResponse]
+    limit: int
+    offset: int
+    total: int
