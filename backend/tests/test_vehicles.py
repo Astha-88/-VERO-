@@ -84,7 +84,7 @@ def test_list_vehicles() -> None:
 
     assert create_response.status_code == 201
 
-    response = client.get("/vehicles?limit=1000&offset=0")
+    response = client.get("/vehicles?limit=100&offset=0")
 
     assert response.status_code == 200
 
@@ -95,7 +95,7 @@ def test_list_vehicles() -> None:
     assert "offset" in data
     assert "total" in data
 
-    assert data["limit"] == 1000
+    assert data["limit"] == 100
     assert data["offset"] == 0
     assert data["total"] >= 1
 
