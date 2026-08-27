@@ -40,11 +40,12 @@ def test_create_duplicate_vehicle() -> None:
     )
 
     assert second_response.status_code == 409
-
     assert (
         second_response.json()["detail"]
         == f"Vehicle with registration number {registration_number} already exists"
     )
+
+
 def test_get_vehicle() -> None:
     registration_number = f"DL{uuid4().hex[:8].upper()}"
 
@@ -118,6 +119,7 @@ def test_list_vehicles_pagination() -> None:
             "/vehicles",
             json={"registration_number": registration_number},
         )
+
         assert response.status_code == 201
 
     response = client.get("/vehicles?limit=2&offset=0")
@@ -130,3 +132,59 @@ def test_list_vehicles_pagination() -> None:
     assert data["offset"] == 0
     assert len(data["items"]) == 2
     assert data["total"] >= 3
+
+
+def test_list_vehicles_by_registration_number() -> None:
+    registration_number = f"DL{uuid4().hex[:8].upper()}"
+
+    create_response = client.post(
+        "/vehicles",
+        json={"registration_number": registration_number},
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.get(
+        f"/vehicles?registration_number={registration_number}"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 1
+    assert len(data["items"]) == 1
+    assert data["items"][0]["registration_number"] == registration_number
+
+
+def test_list_vehicles_by_unknown_registration_number() -> None:
+    registration_number = f"DL{uuid4().hex[:8].upper()}"
+
+    response = client.get(
+        f"/vehicles?registration_number={registration_number}"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["total"] == 0
+    assert data["items"] == []
+
+
+def test_list_vehicles_invalid_limit() -> None:
+    response = client.get("/vehicles?limit=0")
+
+    assert response.status_code == 422
+
+
+def test_list_vehicles_limit_too_large() -> None:
+    response = client.get("/vehicles?limit=101")
+
+    assert response.status_code == 422
+
+
+def test_list_vehicles_negative_offset() -> None:
+    response = client.get("/vehicles?offset=-1")
+
+    assert response.status_code == 422

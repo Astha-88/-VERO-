@@ -24,17 +24,20 @@ def create_vehicle_endpoint(
             status_code=409,
             detail=str(exc),
         ) from exc
+
+
 @router.get("", response_model=VehicleListResponse)
 def list_vehicles_endpoint(
-   limit: int = Query(default=20, ge=1, le=100),
-   offset: int = Query(default=0, ge=0),    
-
-db: Session = Depends(get_db),  # noqa: B008
+    registration_number: str | None = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),  # noqa: B008
 ) -> VehicleListResponse:
     vehicles, total = get_vehicles(
         db,
         limit=limit,
         offset=offset,
+        registration_number=registration_number,
     )
 
     return VehicleListResponse(
@@ -43,6 +46,7 @@ db: Session = Depends(get_db),  # noqa: B008
         offset=offset,
         total=total,
     )
+
 
 @router.get("/{vehicle_id}", response_model=VehicleResponse)
 def get_vehicle_endpoint(
