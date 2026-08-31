@@ -5,6 +5,7 @@ from app.api.incident import router as incident_router
 from app.api.ownership import router as ownership_router
 from app.api.service_record import router as service_record_router
 from app.api.vehicle_details import router as vehicle_details_router
+from app.api.vehicle_profile import router as vehicle_profile_router
 from app.api.vehicles import router as vehicle_router
 from app.core import database
 
@@ -17,6 +18,7 @@ app.include_router(service_record_router)
 app.include_router(vehicle_router)
 app.include_router(vehicle_details_router)
 app.include_router(ownership_router)
+app.include_router(vehicle_profile_router)
 
 @app.get("/health/live")
 def health_live() -> dict[str, str]:
