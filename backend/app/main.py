@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.incident import router as incident_router
 from app.api.ownership import router as ownership_router
+from app.api.risk_assessment import router as risk_assessment_router
 from app.api.service_record import router as service_record_router
 from app.api.vehicle_details import router as vehicle_details_router
 from app.api.vehicle_profile import router as vehicle_profile_router
@@ -14,6 +15,7 @@ app = FastAPI(
     version="0.1.0",
 )
 app.include_router(incident_router)
+app.include_router(risk_assessment_router)
 app.include_router(service_record_router)
 app.include_router(vehicle_router)
 app.include_router(vehicle_details_router)
