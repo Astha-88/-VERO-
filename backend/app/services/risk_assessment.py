@@ -87,7 +87,9 @@ def get_risk_assessment(
     # Ownership risk
     owner_count = len(ownership)
 
-    if owner_count <= 1:
+    if owner_count == 0:
+        positive_signals.append("No ownership records are available.")
+    elif owner_count == 1:
         positive_signals.append("Vehicle has a single recorded owner.")
     elif owner_count == 2:
         score += 5
