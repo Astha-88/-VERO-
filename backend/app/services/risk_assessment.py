@@ -82,13 +82,14 @@ def get_risk_assessment(
                 )
 
     if not incidents:
-        positive_signals.append("No incidents have been reported.")
-
+    	positive_signals.append(
+        	"No incident records are present in the supplied data."
+    	)
     # Ownership risk
     owner_count = len(ownership)
 
     if owner_count == 0:
-        positive_signals.append("No ownership records are available.")
+        pass
     elif owner_count == 1:
         positive_signals.append("Vehicle has a single recorded owner.")
     elif owner_count == 2:

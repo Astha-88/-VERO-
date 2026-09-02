@@ -56,9 +56,9 @@ def test_risk_assessment_low_risk() -> None:
     assert data["risk_level"] == "Low"
     assert data["red_flags"] == []
     assert any(
-        "No incidents" in signal
-        for signal in data["positive_signals"]
-    )
+    "No incident records" in signal
+    for signal in data["positive_signals"]
+)
 
 
 def test_risk_assessment_incident_increases_risk() -> None:
