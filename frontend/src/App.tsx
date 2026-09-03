@@ -22,8 +22,38 @@ type VehicleDetails = {
   fuel_type?: string | null;
 };
 
+type ExternalEvidence = {
+  id: number;
+  vehicle_id: number;
+  source: string;
+  evidence_type: string;
+  source_record_id?: string | null;
+  data: {
+    registration?: {
+      verified?: boolean;
+      registration_date?: string | null;
+      vehicle_class?: string | null;
+      fitness_upto?: string | null;
+    };
+    vehicle?: {
+      owner_name?: string | null;
+      maker_model?: string | null;
+      fuel_type?: string | null;
+    };
+    insurance?: {
+      insurance_upto?: string | null;
+    };
+    data_limitations?: string[];
+    amount?: number;
+    status?: string;
+    challan_no?: string;
+  };
+  retrieved_at: string;
+};
+
 type VehicleReport = {
   vehicle: VehicleProfile;
+  external_evidence: ExternalEvidence[];
   risk_assessment: RiskAssessment;
 };
 
@@ -448,6 +478,8 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
   const [aiSummary, setAiSummary] = useState<AISummary | null>(null);
   const [aiLoading, setAiLoading] = useState(true);
   const [aiError, setAiError] = useState("");
+  const [externalRefreshing, setExternalRefreshing] = useState(false);
+  const [externalRefreshError, setExternalRefreshError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -477,10 +509,12 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
         );
 
         const reportPayload: VehicleReport = {
-          vehicle: vehiclePayload,
-          risk_assessment:
-            payload.risk_assessment as RiskAssessment,
-        };
+  	vehicle: vehiclePayload,
+  	external_evidence:
+    	(payload.external_evidence as ExternalEvidence[]) ?? [],
+  	risk_assessment:
+    	payload.risk_assessment as RiskAssessment,
+	};
 
         if (!cancelled) {
           setReport(reportPayload);
@@ -539,6 +573,48 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
     };
   }, [vehicleId]);
 
+  const refreshExternalVerification = async () => {
+  try {
+    setExternalRefreshing(true);
+    setExternalRefreshError("");
+
+    const response = await fetch(
+      `${API_BASE_URL}/vehicles/${vehicleId}/external-evidence/refresh`,
+      {
+        method: "POST",
+      },
+    );
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+
+      throw new Error(
+        payload?.detail ||
+          "Could not refresh external verification.",
+      );
+    }
+
+    const refreshedEvidence =
+      (await response.json()) as ExternalEvidence[];
+
+    setReport((currentReport) =>
+      currentReport
+        ? {
+            ...currentReport,
+            external_evidence: refreshedEvidence,
+          }
+        : currentReport,
+    );
+  } catch (requestError) {
+    setExternalRefreshError(
+      requestError instanceof Error
+        ? requestError.message
+        : "Could not refresh external verification.",
+    );
+  } finally {
+    setExternalRefreshing(false);
+  }
+};
   if (loading) {
     return (
       <LoadingState message="Building your vehicle report…" />
@@ -562,6 +638,38 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
   const services = profile.service_records ?? [];
   const incidents = profile.incidents ?? [];
 
+  const externalEvidence = report.external_evidence ?? [];
+
+  const rcEvidence = externalEvidence.find(
+    (item) =>
+      item.source === "api_sathi" &&
+      item.evidence_type === "rc_verification",
+  );
+
+  const challans = externalEvidence.filter(
+    (item) =>
+      item.source === "api_sathi" &&
+      item.evidence_type === "challan",
+  );
+  const externalVehicle = rcEvidence?.data.vehicle;
+ 
+  const displayVehicleName =
+    details?.make && details?.model
+      ? `${details.make} ${details.model}`
+      : externalVehicle?.maker_model || "Vehicle";
+
+  const displayMake =
+    details?.make ||
+    externalVehicle?.maker_model?.split(" ")[0];
+
+  const displayModel =
+    details?.model ||
+    externalVehicle?.maker_model?.split(" ").slice(1).join(" ");
+
+  const displayFuelType =
+    details?.fuel_type ||
+    externalVehicle?.fuel_type;
+
   return (
     <section className="inner-page results-page">
       <button
@@ -576,8 +684,7 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
           <p className="eyebrow">VEHICLE REPORT</p>
 
           <h1>
-            {details?.make || "Vehicle"}{" "}
-            {details?.model || ""}
+            {displayVehicleName}
           </h1>
 
           <p className="registration-pill">
@@ -595,12 +702,12 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
         <InfoCard title="Vehicle details">
           <DataRow
             label="Make"
-            value={details?.make}
+            value={displayMake}
           />
 
           <DataRow
             label="Model"
-            value={details?.model}
+            value={displayModel}
           />
 
           <DataRow
@@ -615,7 +722,7 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
 
           <DataRow
             label="Fuel type"
-            value={details?.fuel_type}
+            value={displayFuelType}
           />
         </InfoCard>
 
@@ -651,7 +758,139 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
         </InfoCard>
       </div>
 
-      <InfoCard title="AI assessment">
+     <InfoCard title="External verification">
+  <div className="external-header">
+    <div>
+      <strong>External vehicle data</strong>
+      <span className="external-provider">
+        API Sathi provider data
+      </span>
+    </div>
+
+    <button
+      className="secondary-button"
+      onClick={refreshExternalVerification}
+      disabled={externalRefreshing}
+    >
+      {externalRefreshing
+        ? "Refreshing..."
+        : "↻ Refresh verification"}
+    </button>
+  </div>
+
+  {externalRefreshError && (
+    <p className="ai-error">{externalRefreshError}</p>
+  )}
+
+  {rcEvidence ? (
+    <>
+      <div className="external-source">
+       <p className="external-retrieved">
+  	Last retrieved{" "}
+  	{new Date(rcEvidence.retrieved_at).toLocaleString()}
+	</p>
+	 <span className="verification-status">
+          {rcEvidence.data.registration?.verified
+            ? "✓ RC verified"
+            : "⚠ RC could not be verified"}
+        </span>
+
+        <span className="external-provider">
+          API Sathi provider data
+        </span>
+      </div>
+
+      <div className="signal-columns">
+        <div>
+          <h3>Registration</h3>
+
+          <DataRow
+            label="Owner"
+            value={rcEvidence.data.vehicle?.owner_name}
+          />
+
+          <DataRow
+            label="Vehicle"
+            value={rcEvidence.data.vehicle?.maker_model}
+          />
+
+          <DataRow
+            label="Fuel type"
+            value={rcEvidence.data.vehicle?.fuel_type}
+          />
+
+          <DataRow
+            label="Registration date"
+            value={rcEvidence.data.registration?.registration_date}
+          />
+
+          <DataRow
+            label="Vehicle class"
+            value={rcEvidence.data.registration?.vehicle_class}
+          />
+        </div>
+
+        <div>
+          <h3>Compliance</h3>
+
+          <DataRow
+  		label="Insurance"
+  		value={
+    		rcEvidence.data.insurance?.insurance_upto
+      		? new Date(
+          		rcEvidence.data.insurance.insurance_upto,
+        		) < new Date()
+        		? `Expired · ${rcEvidence.data.insurance.insurance_upto}`
+        		: `Valid until ${rcEvidence.data.insurance.insurance_upto}`
+      		: undefined
+  		}
+		/>
+
+          <DataRow
+            label="Fitness valid until"
+            value={rcEvidence.data.registration?.fitness_upto}
+          />
+
+          <DataRow
+            label="Pending challans"
+            value={challans.length.toString()}
+          />
+        </div>
+      </div>
+
+      {challans.length > 0 && (
+        <div className="external-warning">
+          <h3>⚠ Pending challans</h3>
+
+          {challans.map((challan) => (
+            <DataRow
+              key={challan.id}
+              label={challan.data.challan_no ?? "Challan"}
+              value={`₹${challan.data.amount ?? 0} · ${
+                challan.data.status ?? "Unknown"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
+      <p className="external-disclaimer">
+        Data supplied by an external vehicle-data provider. It should
+        be independently verified against the vehicle's documents and
+        official records.
+      </p>
+       </>
+     ) : (
+        <div className="external-empty">
+          <p>No external verification has been retrieved for this vehicle.</p>
+          <p>
+            Refresh external verification to check available registration
+            and compliance data.
+          </p>
+        </div>
+      )}
+     </InfoCard> 
+     <InfoCard title="AI assessment">
         {aiLoading && (
           <p className="ai-loading">
             Generating buyer-friendly assessment...
