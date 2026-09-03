@@ -24,7 +24,7 @@ router = APIRouter(
 def create_ownership_endpoint(
     vehicle_id: int,
     ownership_data: OwnershipCreate,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> OwnershipResponse:
     try:
         return create_ownership(
@@ -45,7 +45,7 @@ def create_ownership_endpoint(
 )
 def get_ownership_endpoint(
     vehicle_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> list[OwnershipResponse]:
     try:
         return get_ownership(db, vehicle_id)
@@ -63,7 +63,7 @@ def get_ownership_endpoint(
 def delete_ownership_endpoint(
     vehicle_id: int,
     ownership_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> None:
     try:
         ownership_records = get_ownership(db, vehicle_id)

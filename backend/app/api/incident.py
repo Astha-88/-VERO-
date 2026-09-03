@@ -23,7 +23,7 @@ router = APIRouter(
 def create_incident_endpoint(
     vehicle_id: int,
     incident_data: IncidentCreate,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> IncidentResponse:
     try:
         return create_incident(
@@ -44,7 +44,7 @@ def create_incident_endpoint(
 )
 def get_incidents_endpoint(
     vehicle_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> list[IncidentResponse]:
     try:
         return get_incidents(db, vehicle_id)
@@ -62,7 +62,7 @@ def get_incidents_endpoint(
 def delete_incident_endpoint(
     vehicle_id: int,
     incident_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> None:
     try:
         delete_incident(

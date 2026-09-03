@@ -14,7 +14,7 @@ router = APIRouter(
 @router.get("", response_model=VehicleProfileResponse)
 def get_vehicle_profile_endpoint(
     vehicle_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> VehicleProfileResponse:
     try:
         return get_vehicle_profile(db, vehicle_id)

@@ -5,7 +5,6 @@ from app.core.database import get_db
 from app.schemas.vehicle_report import VehicleReportResponse
 from app.services.vehicle_report import get_vehicle_report
 
-
 router = APIRouter(
     prefix="/vehicles/{vehicle_id}/report",
     tags=["vehicle-report"],

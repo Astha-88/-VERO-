@@ -6,7 +6,6 @@ from google.genai import types
 from app.core.config import settings
 from app.schemas.ai_summary import AISummaryResponse
 
-
 client = genai.Client(api_key=settings.gemini_api_key)
 
 

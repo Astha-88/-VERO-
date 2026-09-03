@@ -6,7 +6,6 @@ from app.schemas.ai_summary import AISummaryResponse
 from app.services.ai_summary import generate_ai_summary
 from app.services.vehicle_report import get_vehicle_report
 
-
 router = APIRouter(
     prefix="/vehicles/{vehicle_id}/ai-summary",
     tags=["ai-summary"],

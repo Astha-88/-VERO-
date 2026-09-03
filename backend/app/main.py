@@ -3,13 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.ai_summary import router as ai_summary_router
-from app.api.vehicle_report import router as vehicle_report_router
+from app.api.external_lookup import router as external_lookup_router
 from app.api.incident import router as incident_router
 from app.api.ownership import router as ownership_router
 from app.api.risk_assessment import router as risk_assessment_router
 from app.api.service_record import router as service_record_router
 from app.api.vehicle_details import router as vehicle_details_router
 from app.api.vehicle_profile import router as vehicle_profile_router
+from app.api.vehicle_report import router as vehicle_report_router
 from app.api.vehicles import router as vehicle_router
 from app.core import database
 
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(external_lookup_router)
 app.include_router(incident_router)
 app.include_router(risk_assessment_router)
 app.include_router(service_record_router)

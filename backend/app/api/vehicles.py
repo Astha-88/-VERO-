@@ -15,7 +15,7 @@ router = APIRouter(prefix="/vehicles", tags=["vehicles"])
 @router.post("", response_model=VehicleResponse, status_code=201)
 def create_vehicle_endpoint(
     vehicle_data: VehicleCreate,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> VehicleResponse:
     try:
         return create_vehicle(db, vehicle_data)
@@ -31,7 +31,7 @@ def list_vehicles_endpoint(
     registration_number: str | None = None,
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> VehicleListResponse:
     vehicles, total = get_vehicles(
         db,
@@ -51,7 +51,7 @@ def list_vehicles_endpoint(
 @router.get("/{vehicle_id}", response_model=VehicleResponse)
 def get_vehicle_endpoint(
     vehicle_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> VehicleResponse:
     try:
         return get_vehicle(db, vehicle_id)

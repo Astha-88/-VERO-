@@ -22,7 +22,7 @@ router = APIRouter(
 def create_vehicle_details_endpoint(
     vehicle_id: int,
     details_data: VehicleDetailsCreate,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> VehicleDetailsResponse:
     try:
         return create_vehicle_details(
@@ -48,7 +48,7 @@ def create_vehicle_details_endpoint(
 @router.get("", response_model=VehicleDetailsResponse)
 def get_vehicle_details_endpoint(
     vehicle_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> VehicleDetailsResponse:
     try:
         return get_vehicle_details(db, vehicle_id)
@@ -63,7 +63,7 @@ def get_vehicle_details_endpoint(
 def update_vehicle_details_endpoint(
     vehicle_id: int,
     details_data: VehicleDetailsCreate,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> VehicleDetailsResponse:
     try:
         return update_vehicle_details(

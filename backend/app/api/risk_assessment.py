@@ -14,7 +14,7 @@ router = APIRouter(
 @router.get("", response_model=RiskAssessmentResponse)
 def get_risk_assessment_endpoint(
     vehicle_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> RiskAssessmentResponse:
     try:
         return get_risk_assessment(db, vehicle_id)

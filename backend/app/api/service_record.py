@@ -26,7 +26,7 @@ router = APIRouter(
 def create_service_record_endpoint(
     vehicle_id: int,
     service_data: ServiceRecordCreate,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> ServiceRecordResponse:
     try:
         return create_service_record(
@@ -47,7 +47,7 @@ def create_service_record_endpoint(
 )
 def get_service_records_endpoint(
     vehicle_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> list[ServiceRecordResponse]:
     try:
         return get_service_records(
@@ -68,7 +68,7 @@ def get_service_records_endpoint(
 def delete_service_record_endpoint(
     vehicle_id: int,
     service_record_id: int,
-    db: Session = Depends(get_db),  # noqa: B008
+    db: Session = Depends(get_db),
 ) -> None:
     try:
         delete_service_record(
