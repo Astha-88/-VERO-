@@ -3,8 +3,14 @@
 .app-shell { min-height: 100vh; width: 100%; overflow-x: hidden; background: var(--paper); color: var(--ink); }
 .page-content { width: 100%; min-height: calc(100vh - 76px); }
 
-.navbar { width: 100%; height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(24px, 7vw, 112px); border-bottom: 1px solid var(--line); background: rgba(247,246,242,.96); position: relative; z-index: 10; }
-.brand { border: 0; padding: 0; background: transparent; color: var(--ink); font-size: 1.5rem; font-weight: 800; letter-spacing: .12em; }
+.navbar { width: 100%; height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; border-bottom: 1px solid var(--line); background: rgba(247,246,242,.96); position: relative; z-index: 10; }
+.brand {align-items: center; border: 0; padding: 0; background: transparent; color: var(--ink); font-size: 1.5rem; cursor: pointer; display: flex; font-weight: 800; letter-spacing: .12em; }
+.brand-logo {
+  display: block;
+  width: 110px;
+  height: auto;
+  object-fit: contain;
+}
 .nav-links { display: flex; gap: clamp(20px, 3vw, 36px); }
 .nav-links button { border: 0; background: transparent; color: #333; padding: 8px 0; font-size: .95rem; }
 .nav-links button:hover, .back-link:hover { color: #000; text-decoration: underline; text-underline-offset: 4px; }
@@ -112,4 +118,101 @@
   .data-row strong { text-align: left; }
   .record { flex-direction: column; }
   .footer { flex-direction: column; }
+}
+.due-diligence-summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.due-diligence-summary > div:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.due-diligence-summary > div:first-child strong {
+  font-size: 2rem;
+}
+
+.due-diligence-summary > div:first-child span {
+  color: var(--muted);
+}
+
+.due-diligence-cost {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.due-diligence-cost span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.due-diligence-list {
+  display: grid;
+  gap: 10px;
+}
+
+.due-diligence-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.due-diligence-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.due-diligence-check {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e8f7ee;
+  color: #18794e;
+  font-weight: 700;
+}
+
+.due-diligence-status div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.due-diligence-status span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.due-diligence-next {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.due-diligence-next strong {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.due-diligence-next ul {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+}
+
+.due-diligence-next li + li {
+  margin-top: 6px;
 }

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.ai_summary import router as ai_summary_router
+from app.api.due_diligence import router as due_diligence_router
 from app.api.external_evidence import router as external_evidence_router
 from app.api.external_lookup import router as external_lookup_router
 from app.api.incident import router as incident_router
@@ -30,6 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(due_diligence_router)
 app.include_router(external_evidence_router)
 app.include_router(external_lookup_router)
 app.include_router(incident_router)

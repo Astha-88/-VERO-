@@ -109,6 +109,19 @@ type AISummary = {
   data_limitations: string[];
 };
 
+type DueDiligenceStep = {
+  id: number;
+  vehicle_id: number;
+  step_type: string;
+  status: string;
+  source?: string | null;
+  cost?: number | null;
+  notes?: string | null;
+  started_at?: string | null;
+  completed_at?: string | null;
+  created_at: string;
+};
+
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"
 ).replace(/\/$/, "");
@@ -185,12 +198,16 @@ function Header() {
   return (
     <header className="navbar">
       <button
-        className="brand"
-        onClick={() => navigate("/")}
-        aria-label="VERO home"
-      >
-        VERO
-      </button>
+  	className="brand"
+  	onClick={() => navigate("/")}
+  	aria-label="VERO home"
+	>
+  	<img
+    	src="/vero-logo.png"
+    	alt="VERO"
+    	className="brand-logo"
+  	/>
+	</button>
 
       <nav className="nav-links" aria-label="Primary navigation">
         <button onClick={() => navigate("/#how-it-works")}>
@@ -276,8 +293,7 @@ function HomePage() {
 
           <p className="hero-description">
             Get a complete picture of a used vehicle&apos;s history,
-            ownership, service records, incidents, and risk — all in one
-            place.
+            ownership, service records, incidents, and potential risks with VERO
           </p>
 
           <div className="search-box">
@@ -480,7 +496,10 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
   const [aiError, setAiError] = useState("");
   const [externalRefreshing, setExternalRefreshing] = useState(false);
   const [externalRefreshError, setExternalRefreshError] = useState("");
-
+  const [dueDiligenceSteps, setDueDiligenceSteps] = useState<
+  DueDiligenceStep[]
+>([]);
+const [dueDiligenceLoading, setDueDiligenceLoading] = useState(true);
   useEffect(() => {
     let cancelled = false;
 
@@ -518,6 +537,34 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
 
         if (!cancelled) {
           setReport(reportPayload);
+        }
+                try {
+          setDueDiligenceLoading(true);
+
+          const dueDiligenceResponse = await fetch(
+            `${API_BASE_URL}/vehicles/${vehicleId}/due-diligence`,
+          );
+
+          if (dueDiligenceResponse.ok) {
+            const steps =
+              (await dueDiligenceResponse.json()) as DueDiligenceStep[];
+
+            if (!cancelled) {
+              setDueDiligenceSteps(steps);
+            }
+          } else if (dueDiligenceResponse.status === 404) {
+            if (!cancelled) {
+              setDueDiligenceSteps([]);
+            }
+          }
+        } catch {
+          if (!cancelled) {
+            setDueDiligenceSteps([]);
+          }
+        } finally {
+          if (!cancelled) {
+            setDueDiligenceLoading(false);
+          }
         }
 
         // AI assessment is fetched separately from the main report.
@@ -605,6 +652,16 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
           }
         : currentReport,
     );
+      const dueDiligenceResponse = await fetch(
+      `${API_BASE_URL}/vehicles/${vehicleId}/due-diligence`,
+    );
+
+    if (dueDiligenceResponse.ok) {
+      const steps =
+        (await dueDiligenceResponse.json()) as DueDiligenceStep[];
+
+      setDueDiligenceSteps(steps);
+    } 
   } catch (requestError) {
     setExternalRefreshError(
       requestError instanceof Error
@@ -639,7 +696,14 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
   const incidents = profile.incidents ?? [];
 
   const externalEvidence = report.external_evidence ?? [];
+  const completedDueDiligence = dueDiligenceSteps.filter(
+  (step) => step.status === "completed",
+);
 
+const providerCost = completedDueDiligence.reduce(
+  (total, step) => total + Number(step.cost ?? 0),
+  0,
+);
   const rcEvidence = externalEvidence.find(
     (item) =>
       item.source === "api_sathi" &&
@@ -890,6 +954,89 @@ function VehiclePage({ vehicleId }: { vehicleId: number }) {
         </div>
       )}
      </InfoCard> 
+           <InfoCard title="Due diligence progress">
+        <div className="due-diligence-summary">
+          <div>
+            <strong>
+              {completedDueDiligence.length}
+            </strong>
+            <span>
+              {completedDueDiligence.length === 1
+                ? " verification completed"
+                : " verifications completed"}
+            </span>
+          </div>
+
+          {providerCost > 0 && (
+            <div className="due-diligence-cost">
+              <span>Provider API cost</span>
+              <strong>{formatMoney(providerCost)}</strong>
+            </div>
+          )}
+        </div>
+
+        {dueDiligenceLoading ? (
+          <p className="empty-state">
+            Loading verification progress...
+          </p>
+        ) : completedDueDiligence.length > 0 ? (
+          <div className="due-diligence-list">
+            {completedDueDiligence.map((step) => (
+              <div
+                className="due-diligence-item"
+                key={step.id}
+              >
+                <div className="due-diligence-status">
+                  <span className="due-diligence-check">
+                    ✓
+                  </span>
+
+                  <div>
+                    <strong>
+                      {formatDueDiligenceStep(step.step_type)}
+                    </strong>
+
+                    <span>
+                      {step.source
+                        ? `Verified via ${formatSource(step.source)}`
+                        : "Verification completed"}
+                    </span>
+                  </div>
+                </div>
+
+                {step.cost !== null &&
+                  step.cost !== undefined && (
+                    <strong>
+                      {formatMoney(step.cost)}
+                    </strong>
+                  )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="empty-state">
+            No verification steps have been completed yet.
+          </p>
+        )}
+
+        <div className="due-diligence-next">
+          <strong>Still to investigate</strong>
+
+          <ul>
+            <li>Ownership history</li>
+            <li>Service and maintenance history</li>
+            <li>Accident history</li>
+            <li>Insurance claim history</li>
+            <li>Physical inspection</li>
+          </ul>
+        </div>
+
+        <p className="external-disclaimer">
+          Completed checks reflect evidence actually retrieved by
+          VERO. Unavailable records are not treated as evidence that
+          no issue exists.
+        </p>
+      </InfoCard>
      <InfoCard title="AI assessment">
         {aiLoading && (
           <p className="ai-loading">
@@ -1279,7 +1426,7 @@ function Footer() {
   return (
     <footer className="footer">
       <span>VERO</span>
-      <span>Vehicle due diligence, made clearer.</span>
+      <span>VERO - The truth you can rely on.</span>
     </footer>
   );
 }
@@ -1376,6 +1523,37 @@ function formatDate(value?: string | null) {
         month: "short",
         year: "numeric",
       });
+}
+function formatDueDiligenceStep(stepType: string) {
+  const labels: Record<string, string> = {
+    rc_verification: "RC verification",
+    challan_check: "Challan verification",
+    insurance_verification: "Insurance verification",
+    ownership_analysis: "Ownership analysis",
+    service_history: "Service history",
+    incident_analysis: "Incident analysis",
+    physical_inspection: "Physical inspection",
+  };
+
+  return (
+    labels[stepType] ??
+    stepType
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase())
+  );
+}
+
+function formatSource(source: string) {
+  const labels: Record<string, string> = {
+    api_sathi: "API Sathi",
+  };
+
+  return (
+    labels[source] ??
+    source
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase())
+  );
 }
 
 function formatMoney(
